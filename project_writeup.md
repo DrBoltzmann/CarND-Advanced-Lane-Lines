@@ -88,20 +88,18 @@ The undistortion function [9] is applied to one of the test images below:
 
 The top_down perspective transform was applied using the `cv2.warpPerspective()` and `cv2.getPerspectiveTransform()` functions. The arguments for `cv2.getPerspectiveTransform()` include src and dst, which are the source and destination coordinates warpPerspectivly, defining how the image needs to be warped to achieve the top_down perspective. M and Minv then are referenced in `cv2.warpPerspective()` as needed for the top_down and then later the inverse transformation, which will be needed at the end of the pipeline. The `src` and `dst` coordinates are define as follows:
 
-```python
-bot_width = 0.74 # percent of bottom trapizoid height
-mid_width = 0.08 # percent of middle trapizoid height
-height_pct = 0.61 # percent for trapizoid width
-bottom_trim = 0.95 # percent from top to bottom to avoid car hood
+* bot_width = 0.74 # percent of bottom trapizoid height
+* mid_width = 0.08 # percent of middle trapizoid height
+* height_pct = 0.61 # percent for trapizoid width
+* bottom_trim = 0.95 # percent from top to bottom to avoid car hood
 
-src = np.float32([[img.shape[1] * (0.5 - mid_width / 2), img.shape[0] * height_pct],
-                  [img.shape[1] * (0.5 + mid_width / 2), img.shape[0] * height_pct],
-                  [img.shape[1] * (0.5 + bot_width / 2), img.shape[0] * bottom_trim],
-                  [img.shape[1] * (0.5 - bot_width / 2), img.shape[0] * bottom_trim]])
+* src = np.float32([[img.shape[1] * (0.5 - mid_width / 2), img.shape[0] * height_pct],
+* [img.shape[1] * (0.5 + mid_width / 2), img.shape[0] * height_pct],
+* [img.shape[1] * (0.5 + bot_width / 2), img.shape[0] * bottom_trim],
+* [img.shape[1] * (0.5 - bot_width / 2), img.shape[0] * bottom_trim]])
 
-offset = img_size[0] * 0.25
-dst = np.float32([[offset, 0], [img_size[0]-offset, 0], [img_size[0]-offset, img_size[1]], [offset, img_size[1]]])
-                  ```
+* offset = img_size[0] * 0.25
+* dst = np.float32([[offset, 0], [img_size[0]-offset, 0], [img_size[0]-offset, img_size[1]], [offset, img_size[1]]])
 
 This resulted in the following source and destination points, based on the image input dimensions of 1280 x 720 pixels:
 
