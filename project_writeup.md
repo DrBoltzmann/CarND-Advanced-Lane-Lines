@@ -32,22 +32,23 @@ The goals / steps of this project are the following:
 [image11]: ./output_images/binary_warped_example.jpg "Binary Wapred example"
 [image12]: ./output_images/warp_unwarp_example.jpg "Binary Unwapred example"
 [image13]: ./output_images/histogram_visualization.jpg "Histogram Visualization"
-[image14]: ./output_images/sliding_window_test_3.jpg "Lane finding Test Image 3"
+[image14]: ./output_images/lane_finding_pipeline1/pipeline_color_sliding_window_test_3.jpg "Lane finding Test Image 3"
 [image15]: ./output_images/lane_detection_output_001.png "Lane overlay example"
 [image16]: ./output_video/images/vlcsnap-2018-06-17-22h59m28s954.png "Failure example 1"
 [image17]: ./output_video/images/vlcsnap-2018-06-17-17h40m07s385.png "Failure example 2"
 
-[image18]: ./output_images/sliding_window_test_5.jpg "Lane finding failure"
+[image18]: ./output_images/lane_finding_pipeline1/pipeline_color_sliding_window_test_5.jpg "Lane finding failure"
 [image19]: ./output_images/undistorted/undist_coordinates.png "Topdown coordinates"
 [image20]: ./output_images/LAB_example.jpg "LAB color transform test"
 [image21]: ./output_images/color_pipeline2.jpg "Color transform for pipeline"
 [image22]: ./output_images/pipeline1_transform_test.jpg "Color transform for pipeline"
 [image23]: ./output_images/pipeline2_transform_test.jpg "Color transform for pipeline"
 [image24]: ./output_images/lane_finding_pipeline2/pipeline_color2_sliding_window_test_5.jpg "Color transform for pipeline"
+[image25]: ./test_images/test5.jpg "Test Image 5"
 
 
-[video1]: project_video_output.mp4 "Project Video"
-[video2]: challenge_video_output.mp4 "Challenge Video"
+[video1]: ./project_video_output.mp4 "Project Video"
+[video2]: ./challenge_video_output.mp4 "Challenge Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
@@ -168,7 +169,7 @@ Once the binary_wapred image is created, it can be analyzed using a histogram an
 
 In the sliding windows approach, a window slides across the image, and looks for areas where the pixel values are not equal to zero. These pixel positions can then  be collected in a list, and the list appended with each new found section for the right and left lanes. To capture the lane curvature, a 2nd order polynomial can then be fitted to the lane curve segments, the curvature can then be calculated from the polynomial function.
 
-The function sandbox(binary_wapred) was defined to visualize lane finding using the sliding window approach and test on different test images. This included the sliding window as well as the plotted line over the binary_wapred input image.
+The function sandbox(binary_wapred) was defined to visualize lane finding using the sliding window approach and test it on different test images. This included the sliding window as well as the plotted line over the binary_wapred input image.
 
 ![alt text][image14]
 
@@ -178,7 +179,7 @@ For the full pipeline, sliding_windows(binary_wapred) function was defined for u
 
 Once the lane finding function was run to return the data for left_fit, right_fit and curve radius data, the draw_lane() function defined to draw the lane shape and lane metric data.
 
-A key part of draw_lane is to warp the lane data from the topdown warped image to the unwarped state, which would then be annotated to the unwarped video image. This was accomplished by defining Minv, which is the inverse of the perspecitve warp function. Additionally, the lane curvature and vehicle position data was written using the cv2.putText function.
+A key part of draw_lane is to warp the lane data from the topdown warped image to the unwarped state, which would then be annotated to the unwarped video image. This was accomplished by defining Minv, which is the inverse of the perspective warp function. Additionally, the lane curvature and vehicle position data was written using the cv2.putText function.
 
 ![alt text][image15]
 ---
@@ -187,7 +188,9 @@ A key part of draw_lane is to warp the lane data from the topdown warped image t
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+The final project video results are saved as:
+* project_video_output.mp4
+* https://youtu.be/_u-uyQnFynQ
 
 ---
 
@@ -207,8 +210,8 @@ Am extreme failure example with non-ideal thresholds is shown below, where the l
 A more common failure is shown below, where the left lane was not found correctly. This was likely related to the features of the lane shoulder, where the binary_warped image would give the impression that the lane was far to the left. This would be corrected farther down the highway, but presented an issue with successfully segmenting the lane features.
 ![alt text][image17]
 
-An example of the left lane finding failure is shown below, where the high density of white from the lane shoulder produced an incorrect result from the algorithm.
-
+An example of features in between the lanes producing incorrect lane finding is shown below, where the high density from shade produced by a tree resulted in an incorrect curve of the right lane.
+![alt text][image25]
 ![alt text][image18]
 
 ### 1. Failure Solutions and Success
@@ -230,7 +233,7 @@ The LAB color transformation was tested, with the B channel showing good detecti
 
 ![alt text][image20]
 
-A second color transformation function (pipeline_color2) was defined with essentially the same approach, but better separation between Sobel and Color Thresholds, which were placed in separate functions to better debug and tune the transformation and threshold values. In pipeline2, Both x and y orientations were integrated (in the original function only the x was used) together and then the threshold parameters were tuned. This provided good performance in removing the influence of the tree shadow problem as show below.
+A second color transformation function (pipeline_color2) was defined with essentially the same approach as pipeline_color1, but with better separation between Sobel and Color Thresholds, which were placed in separate functions to better debug and tune the transformation and threshold values. In pipeline_color2, Both x and y orientations were integrated (in the original function only the x was used) together and then the threshold parameters were tuned. This provided good performance in removing the influence of the tree shadow problem as show below. The parameters of the sliding_windows function were also tuned using pipeline_color2 and the sandbox function, with n_windows = 10, and window margin = 100.
 
 ![alt text][image21]
 
@@ -251,8 +254,7 @@ An example is shown below:
 
 The final project video results are saved as:
 * project_video_output.mp4
-
-![alt text][video1]
+* https://youtu.be/_u-uyQnFynQ
 
 The lane finding was successful and a vast improvement over the initial results.
 
@@ -260,9 +262,8 @@ The lane finding was successful and a vast improvement over the initial results.
 
 The challenge project video results are saved as:
 * challenge_video_output.mp4
+* https://youtu.be/6TUSLHHwNq8
 
-![alt text][video2]
-
-The lane finding approach failed on the challenge video on curved sections, and didn't show perfect performance on straight lane sections. This is because the saturation of color on the challenge video is less (flat color) as compared to the project video. Therefore the color transformations are out of the designated thresholds of the color transformations to provide good performance.
+The lane finding approach failed on the challenge video on curved sections, and didn't show perfect performance on straight lane sections. This is likely because the saturation of color on the challenge video is less (flat color) as compared to the project video. Therefore the color transformations are out of the designated thresholds of the color transformations to provide good performance.
 
 This performance issue might be addressed by including transformations to improve contrast between color types in the color images, and then performing binary transform operations. Image transformation could include normalizaton, Gaussian blur, and sharpening to increase image contrast. This would also help with the harder challenge video, where there are large contrast issues between shadowed and over-exposed regions of the road.
