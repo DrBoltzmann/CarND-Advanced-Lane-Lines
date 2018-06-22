@@ -38,9 +38,16 @@ The goals / steps of this project are the following:
 [image17]: ./output_video/images/vlcsnap-2018-06-17-17h40m07s385.png "Failure example 2"
 
 [image18]: ./output_images/sliding_window_test_5.jpg "Lane finding failure"
-[image19]: ./output_images/color_pipeline.jpg "Color transform for pipeline"
+[image19]: ./output_images/undistorted/undist_coordinates.png "Topdown coordinates"
+[image20]: ./output_images/LAB_example.jpg "LAB color transform test"
+[image21]: ./output_images/color_pipeline2.jpg "Color transform for pipeline"
+[image22]: ./output_images/pipeline1_transform_test.jpg "Color transform for pipeline"
+[image23]: ./output_images/pipeline2_transform_test.jpg "Color transform for pipeline"
+[image24]: ./output_images/lane_finding_pipeline2/pipeline_color2_sliding_window_test_5.jpg "Color transform for pipeline"
 
-[video1]: ./output_video/project_output.mp4 "Video"
+
+[video1]: project_video_output.mp4 "Project Video"
+[video2]: challenge_video_output.mp4 "Challenge Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
@@ -86,7 +93,7 @@ The undistortion function [9] is applied to one of the test images below:
 
 #### 2.2 Top_Down Perspective Transform
 
-The top_down perspective transform was applied using the `cv2.warpPerspective()` and `cv2.getPerspectiveTransform()` functions. The arguments for `cv2.getPerspectiveTransform()` include src and dst, which are the source and destination coordinates warpPerspectivly, defining how the image needs to be warped to achieve the top_down perspective. M and Minv then are referenced in `cv2.warpPerspective()` as needed for the top_down and then later the inverse transformation, which will be needed at the end of the pipeline. The `src` and `dst` coordinates are define as follows:
+Initially, the top_down perspective transform was applied using the `cv2.warpPerspective()` and `cv2.getPerspectiveTransform()` functions. The arguments for `cv2.getPerspectiveTransform()` include src and dst, which are the source and destination coordinates warpPerspectivly, defining how the image needs to be warped to achieve the top_down perspective. M and Minv then are referenced in `cv2.warpPerspective()` as needed for the top_down and then later the inverse transformation, which will be needed at the end of the pipeline. The `src` and `dst` coordinates are define as follows:
 
 * bot_width = 0.74 # percent of bottom trapizoid height
 * mid_width = 0.08 # percent of middle trapizoid height
@@ -101,14 +108,18 @@ The top_down perspective transform was applied using the `cv2.warpPerspective()`
 * offset = img_size[0] * 0.25
 * dst = np.float32([[offset, 0], [img_size[0]-offset, 0], [img_size[0]-offset, img_size[1]], [offset, img_size[1]]])
 
+After experiencing problems with the lane finding, the src points were instead taken from manual analysis of the lane image:
+
+![alt text][image19]
+
 This resulted in the following source and destination points, based on the image input dimensions of 1280 x 720 pixels:
 
-| Source        | Destination   |
-|:-------------:|:-------------:|
-| 588.8, 439.2  | 320, 0        |
-| 691.2, 439.2  | 960, 0        |
-| 1113.6, 684   | 960, 720      |
-| 166.4, 684    | 320, 720      |
+| Source    | Destination |
+|:---------:|:-----------:|
+| 600, 446  | 320, 0      |
+| 682, 446  | 960, 0      |
+| 1057, 688 | 960, 720    |
+| 261, 688  | 320, 720    |
 
 This perspective transform [16] was place in the function `topdown()`, with the input image as the only function input. Examples of the topdown perspective transform on straight and curved lane examples are shown below, and in both cases the transformed lines appear parallel to one another along the lane length:
 
@@ -122,6 +133,7 @@ Various color transform approaches were investigated, including:
 * Sobel thresholds
 * HLS selection
 * Combined HLS and HSV
+* LAB
 
 Absolute Sobel Threshold
 
@@ -181,11 +193,11 @@ Here's a [link to my video result](./project_video.mp4)
 
 ### Discussion
 
-#### 1. Lane Finding Failures
+#### 1. Early Lane Finding Failures
 
 In the pipeline development, different approaches to the color transformation were attempted, and tested on the video pipeline. There were some specific road sections which were problematic for lane detection. Generally speaking, in transition regions where the lane material changed color, there could be lane detection problems, resulting in the lane moving too far into the shoulder of the lane.
 
-The threshold definitions for the color transformation played a large role in land finding failure. The final values for the pipeline_color() function were:
+The threshold definitions for the color transformation played a large role in lane finding failure. The final values for the pipeline_color() function were:
 * s_thresh = (115, 200)
 * sx_thresh = (20, 150)
 
@@ -199,4 +211,58 @@ An example of the left lane finding failure is shown below, where the high densi
 
 ![alt text][image18]
 
-The lane finding failure may be improved by masking the search region of the image, similar to the initial lane finding project. This could prevent the sliding window from using the binary color information from that section of the lane.
+### 1. Failure Solutions and Success
+
+Based on feedback from the initial review, the following areas were addressed:
+* Tune coordinates for the top-down transformation
+* Tune color transformation including LAB color testing
+* Improve conversion from pixels to meters
+
+#### Topdown Conversion
+
+To improve the top-down transformation, the straight line test image was opened in photoshop and markers were added to visually address specific points for the near and far points of the trapezoid. The improved coordinates dramatically improved lane finding for curved sections of the road, and in transition regions. The biggest failure occured in a road section with strong shadows from trees, and the goal was to find a good color transformation to remove the shadow section which caused the right lane finding to fail.
+
+![alt text][image19]
+
+#### Color Transformation Improvement
+
+The LAB color transformation was tested, with the B channel showing good detection of the yellow lane line, however the inner shadow section still had problems.
+
+![alt text][image20]
+
+A second color transformation function (pipeline_color2) was defined with essentially the same approach, but better separation between Sobel and Color Thresholds, which were placed in separate functions to better debug and tune the transformation and threshold values. In pipeline2, Both x and y orientations were integrated (in the original function only the x was used) together and then the threshold parameters were tuned. This provided good performance in removing the influence of the tree shadow problem as show below.
+
+![alt text][image21]
+
+The binary transformed images from Pipeline1 and Pipeline2 are shown below.
+
+![alt text][image22]
+![alt text][image23]
+
+The lane finding tests (using the sandbox function) are in:
+* /output_images/lane_finding_pipeline1
+* /output_images/lane_finding_pipeline2
+
+An example is shown below:
+
+![alt text][image24]
+
+### Final Results
+
+The final project video results are saved as:
+* project_video_output.mp4
+
+![alt text][video1]
+
+The lane finding was successful and a vast improvement over the initial results.
+
+### Future Improvements
+
+The challenge project video results are saved as:
+* challenge_video_output.mp4
+
+![alt text][video2]
+
+The lane finding approach failed on the challenge video on curved sections, and didn't show perfect performance on straight lane sections. This is because the saturation of color on the challenge video is less (flat color) as compared to the project video. Therefore the color transformations are out of the designated thresholds of the color transformations to provide good performance.
+
+This performance issue might be addressed by including transformations to improve contrast between color types in the color images, and then performing binary transform operations. Image transformation could include normalizaton, Gaussian blur, and sharpening to increase image contrast. This would also help with the harder challenge video, where there are large contrast issues between shadowed and over-exposed regions of the road.
